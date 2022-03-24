@@ -1,0 +1,18 @@
+{
+    "basic":{
+    "title": "New note",
+    "content": "",
+    "readPermission": "owner",
+    "writePermission": "owner",
+    "commentPermission": "everyone"
+    },
+
+    "userbasic":{
+        "title": "New note",
+        "content": "---\n    image: https://i.imgur.com/XR6qAT2.jpg\n    robots: noindex,nofollow\n---\n\n \n\n<!-- this is CSS -->\n\n<style>\n\n.navbar-brand > span.hidden-xs {\n    color: transparent;\n}\n\n.navbar-brand > span.hidden-xs:before {\n    background-image: url(https://i.imgur.com/XR6qAT2.jpg);\n    background-repeat: no-repeat;\n    content: '　  　';\n    background-size: 60%;\n}\n\n.navbar-brand > span.hidden-xs:after {\n    margin-left: -3.8em;\n    content: 'HackMD';\n    color: #4b4645;\n}\n\n.navbar-brand > .fa-file-text {\n    display: none;\n}\n\n</style>",
+        "readPermission": "owner",
+        "writePermission": "owner",
+        "commentPermission": "everyone"
+    }
+    
+}
