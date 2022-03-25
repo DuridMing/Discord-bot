@@ -3,8 +3,7 @@ hackmd api combine discord bot.
 @author:DuridMing
 date: 03/23/2022
 '''
-from email import header
-from unicodedata import name
+from pydoc import describe
 import discord
 from discord.ext import commands
 
@@ -16,11 +15,12 @@ import json
 
 from time import time
 from datetime import datetime
+
 class note(Cog_Extension):
     def __init__(self, bot):
         super().__init__(bot)
     
-    @commands.command('id')
+    @commands.command('id' ,brief="get note user info." ,description="$id ,get user info")
     async def _note_id(self ,ctx):        
         # get the user info 
         headers = {
@@ -38,7 +38,7 @@ class note(Cog_Extension):
         string = "name: "+ name+", "+ "email: "+ email+"."
         await ctx.send(string)
 
-    @commands.command('find')
+    @commands.command('find' ,brief="find note." ,description="$find <description> ,find the note.")
     async def _note_find(self, ctx , fi_str):
         # find note title 
         await ctx.send("processing...")
@@ -67,7 +67,7 @@ class note(Cog_Extension):
 
         
         # result use embed
-        embed=discord.Embed(title="See what I find...", color=0x1de7d2 , timestamp=datetime.utcnow())
+        embed=discord.Embed(title="See what I find...", color=0x1de7d2 , timestamp=datetime.now(self.tz))
         embed.set_author(name="Durid_bot")
         embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
         
@@ -78,11 +78,11 @@ class note(Cog_Extension):
             embed.add_field(name="Nothind find.", value="maybe you can change the description.")  
 
         end_time = time() - st 
-        print(end_time)
+        # print(end_time)
         embed.set_footer(text=f"total used time: {round(end_time,1)} (s)")
         await ctx.send(embed=embed)
 
-    @commands.command("create")
+    @commands.command("create" ,brief="create note." ,description="$create <name>. create note.")
     async def _note_create(self,ctx,title):
         # create note
         #load basic content.
@@ -106,14 +106,14 @@ class note(Cog_Extension):
 
         # resopnce 
         if recv.status_code == 201:
-            embed = discord.Embed(title="Successed",color=0x1de7d2, timestamp=datetime.utcnow())
+            embed = discord.Embed(title="Successed",color=0x1de7d2, timestamp=datetime.now(self.tz))
             embed.set_author(name="Durid_bot")
             embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
             embed.add_field(name="Note "+responce['title']+" Created", value="note id : "+str(responce['id']),inline=False)
         else :
             # print(recv.status_code)
             embed = discord.Embed(
-                title="Oh No!", color=0x1de7d2, timestamp=datetime.utcnow())
+                title="Oh No!", color=0x1de7d2, timestamp=datetime.now(self.tz))
             embed.set_author(name="Durid_bot")
             embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
             embed.add_field(name="they have some troobule",
@@ -139,7 +139,7 @@ class note(Cog_Extension):
 
     # they don't have methood to attach note.
     # update methood will wrap all thing.
-    @commands.command("note")
+    @commands.command("note", brief="comming soon...", description="comming soon...")
     async def _attach_note(self,ctx,note_id,*,content):
         await ctx.send("comming soon...")
 
