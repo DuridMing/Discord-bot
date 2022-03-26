@@ -44,7 +44,7 @@ class Help(commands.HelpCommand):
         embed = discord.Embed(
             title=cog.qualified_name+" Commands",
             color=0x1de7d2,
-            description="use !help <command> to get more info.",
+            description="use $help <command> to get more info.",
             timestamp=datetime.now(self.tz))
         embed.set_author(name="Durid_bot")
         embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
@@ -73,7 +73,6 @@ class Help(commands.HelpCommand):
         embed = discord.Embed(
             title=group.name+" Commands",
             color=0x1de7d2,
-            description="use $help <command> to get more info.",
             timestamp=datetime.now(self.tz))
         embed.set_author(name="Durid_bot")
         embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")

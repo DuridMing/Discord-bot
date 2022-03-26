@@ -133,3 +133,5 @@ config.py
 
 #for test
 mdtest/
+*.csv
+*.jpg
