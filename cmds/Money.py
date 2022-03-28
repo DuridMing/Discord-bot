@@ -3,14 +3,17 @@ finance modify commands.
 using csv file to record data.
 the file will be locate on ../finance/
 '''
-from re import L
-import discord
-from discord.ext import commands
+# import discord
+from discord import Embed ,File
+from discord.ext import commands ,tasks
 from datetime import datetime, timedelta
+import pandas as pd
 import os
 
 from core.classes import Cog_Extension
 from finance import finance
+
+from config import *
 
 class Money(Cog_Extension):
     def __init__(self, bot):
@@ -54,12 +57,12 @@ class Money(Cog_Extension):
         result = finance.total(year,month)
         
         if result < 0 :
-            embed = discord.Embed(
+            embed = Embed(
                 title="Error", color=0x1de7d2, timestamp=datetime.now(self.tz) ,description="Out of range.")
             embed.set_author(name="Durid_bot")
             embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
         else:
-            embed = discord.Embed(
+            embed = Embed(
                 title=str(month)+"月 total pay", color=0x1de7d2, timestamp=datetime.now(self.tz))
             embed.set_author(name="Durid_bot")
             embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
@@ -77,7 +80,7 @@ class Money(Cog_Extension):
         year = lastMonth.strftime("%Y")
         month = lastMonth.strftime("%m")
 
-        path = "finance/figure/"
+        path =DATA_PATH+"figure/"
         pic_path = path+"finance-" + str(year)+"-"+str(month)+"-chart.jpg"
 
         try:
@@ -91,19 +94,137 @@ class Money(Cog_Extension):
         finally:
             print("[", datetime.now(), "] open figure :",pic_path)
             with open(pic_path, 'rb') as f:
-                picture = discord.File(f)
+                picture = File(f)
                 f.close()
                 await ctx.send(file=picture)
 
-        
-    @commands.command(brief="finance copmpare chart.", description="$lcompare <past_year:int> <past_month:int>. compare to latest.")
-    async def lcompare(self ,ctx ,year:int ,month:int):
-        self.month_check(month)
-        pass
+    @money.command(invoke_without_command=True, brief="list this month descr.", description="$money lastlist")
+    async def lastlist(self, ctx ):
+        today = datetime.now(self.tz)
+        month = today.strftime('%m')
+        year = today.strftime('%Y')
 
-    @commands.command(brief="finance copmpare chart.", description="$tcompare <year1:int> <month1:int> <year2:int> <month2:int>. compare two month.")
-    async def tcompare(self ,ctx ,year1:int ,month1:int ,yeat2:int ,month2:int):
-        pass
+        mdata = finance.list_all(year, month)
+        if mdata is None :
+            embed = Embed(
+                title="Error", color=0x1de7d2, timestamp=datetime.now(self.tz) ,description="the csv data file not found.")
+            embed.set_author(name="Durid_bot")
+            embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
+        else:
+            embed = Embed(
+                title=str(month)+"月 pay list", color=0x1de7d2, timestamp=datetime.now(self.tz))
+            embed.set_author(name="Durid_bot")
+            embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
+            
+            # locate data and create embed.
+            for key, item in mdata:
+                gpdata=mdata.get_group(key)
+                mdescr=""
+                for i in gpdata.index:
+                    mdescr = mdescr + str("{} pay ${:<5d} for {}\n".format(gpdata.loc[i,"date"] , gpdata.loc[i,"dollar"],gpdata.loc[i,"describe"] ))
+                embed.add_field(name=key, value=mdescr,inline=False)
+
+        await ctx.send(embed=embed)
+
+    
+    @money.command(invoke_without_command=True, brief="list month descr.", description="$money plist <year:int> <month:int>")
+    async def plist(self, ctx ,year:int ,month:int):
+        if month <10 or month>0:
+            month = "0"+month
+        
+        mdata = finance.list_all(year, month)
+        if mdata is None:
+            embed = Embed(
+                title="Error", color=0x1de7d2, timestamp=datetime.now(self.tz), description="the csv data file not found.")
+            embed.set_author(name="Durid_bot")
+            embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
+        else:
+            embed = Embed(
+                title=str(month)+"月 pay list", color=0x1de7d2, timestamp=datetime.now(self.tz))
+            embed.set_author(name="Durid_bot")
+            embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
+
+            # locate data and create embed.
+            for key, item in mdata:
+                gpdata = mdata.get_group(key)
+                mdescr = ""
+                for i in gpdata.index:
+                    mdescr = mdescr + str("{} pay ${:<5d} for {}\n".format(
+                        gpdata.loc[i, "date"], gpdata.loc[i, "dollar"], gpdata.loc[i, "describe"]))
+                embed.add_field(name=key, value=mdescr, inline=False)
+
+        await ctx.send(embed=embed)
+
+
+    @commands.command(brief="finance copmpare chart.", description="$lcpr <past_year:int> <past_month:int>. compare to latest.")
+    async def lcpr(self ,ctx ,y2:int ,m2:int):
+        self.month_check(m2)
+        def mck(month):
+            if month > 0 or month < 10:
+                return "0"+str(month)
+        m2 = mck(m2)
+
+        # setting date to last month
+        today = datetime.now(self.tz)
+        first = today.replace(day=1)
+        lastMonth = first - timedelta(days=1)
+        y1 = lastMonth.strftime("%Y")
+        m1 = lastMonth.strftime("%m")
+
+        path = DATA_PATH+"figure/"
+        pic_path = path+"finance-" + \
+            "compare-"+str(y1)+"-"+str(m1)+"-and-" + \
+            str(y2)+"-"+str(m2)+"-chart.jpg"
+
+        try:
+            print("try")
+            if not os.path.exists(pic_path):
+                raise FileNotFoundError
+            else:
+                print("[", datetime.now(), "] find figure on :", pic_path)
+        except FileNotFoundError:
+            print("[", datetime.now(), "] figure not found.create new figure.")
+            figure = finance.compare_chart(y1,m1,y2,m2)
+        finally:
+            print("[", datetime.now(), "] open figure :", pic_path)
+            with open(pic_path, 'rb') as f:
+                picture = File(f)
+                f.close()
+                await ctx.send(file=picture)
+
+
+    @commands.command(brief="finance copmpare chart.", description="$tcpr <year1:int> <month1:int> <year2:int> <month2:int>. compare two month.")
+    async def tcpr(self ,ctx ,y1:int ,m1:int ,y2:int ,m2:int):
+        self.month_check(m1)
+        self.month_check(m2)
+        def mck(month):
+            if month > 0 or month < 10:
+                return "0"+str(month)
+        m1 = mck(m1)
+        m2 = mck(m2)
+
+        path = DATA_PATH+"figure/"
+        pic_path = path+"finance-" + \
+            "compare-"+str(y1)+"-"+str(m1)+"-and-" + \
+            str(y2)+"-"+str(m2)+"-chart.jpg"
+
+        try:
+            if not os.path.exists(pic_path):
+                raise FileNotFoundError
+            else:
+                print("[", datetime.now(), "] find figure on :", pic_path)
+        except FileNotFoundError:
+            print("[", datetime.now(), "] figure not found.create new figure.")
+            figure = finance.compare_chart(y1,m1,y2,m2)
+        finally:
+            print("[", datetime.now(), "] open figure :", pic_path)
+            with open(pic_path, 'rb') as f:
+                picture = File(f)
+                f.close()
+                await ctx.send(file=picture)
+    
+    # need a function cand send fig. on spec. time.
+    # and create first file at same time.
 
 def setup(bot):
     bot.add_cog(Money(bot))

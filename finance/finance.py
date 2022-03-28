@@ -8,12 +8,16 @@ import csv
 import pandas as pd
 
 import finance.chart as chart
+from config import *
+
 # import chart
+# DATA_PATH = "data/"
+
+csv_path = DATA_PATH +"csvf/"
 
 def writting(status,tag,dollar ,describe):
     f = None
-    path = "finance/csvf/"
-    csv_file = path+"fiance-" + \
+    csv_file = csv_path+"fiance-" + \
         datetime.now(timezone(timedelta(hours=+8))
                      ).strftime("%Y-%m")+".csv"
     try:
@@ -34,11 +38,10 @@ def writting(status,tag,dollar ,describe):
         return 0
 
 def total(year,month):
-    # print("counting total.")
-    path = "finance/csvf/"
+    
     if month<10 or month>0:
         month = "0"+str(month)
-    csv_file = path+"fiance-" +str(year)+"-"+str(month)+".csv"
+    csv_file = csv_path+"fiance-" +str(year)+"-"+str(month)+".csv"
 
     try:
         if not os.path.exists(csv_file):
@@ -66,13 +69,38 @@ def lastest_chart():
     year = lastMonth.strftime("%Y")
     month = lastMonth.strftime("%m")
     
-    # path = "finance/figure/"
-    # pic_path = path+"finance-" + str(year)+"-"+str(month)+"-chart.jpg"
-
     status = chart.single_chart(status="pay", month=month, year=year)
     
     return status
+
+def list_all(year ,month):
+       
+    csv_file = csv_path+"fiance-" + str(year)+"-"+str(month)+".csv"
+    # print(csv_file)
+    try:
+        if not os.path.exists(csv_file):
+            print("[",datetime.now(),"] the csv file \"",csv_file,"\" not found.")
+            raise FileNotFoundError
+        else:
+            print("[",datetime.now(),"] read the csv file: ",csv_file)
+            df = pd.read_csv(csv_file)
+
+            # filter the data from status == pay
+            # loc to extract data
+            df_filt = (df['status'] == 'pay')
+            result = df.loc[df_filt].groupby('tag')
+
+            return result
+            
+    except FileNotFoundError:
+        return None
+
+def compare_chart(y1 ,m1 ,y2 ,m2):
+   
+    chart.compare_chart("pay",y1,m1,y2,m2)
     
 
+
 if __name__ == "__main__":
-    print(total(2022,3))
+    compare_chart("2022","02","2022","03")
+    

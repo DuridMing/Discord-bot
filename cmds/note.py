@@ -4,7 +4,8 @@ hackmd api combine discord bot.
 date: 03/23/2022
 '''
 from pydoc import describe
-import discord
+# import discord
+from discord import Embed
 from discord.ext import commands
 
 from core.classes import Cog_Extension
@@ -28,12 +29,14 @@ class note(Cog_Extension):
         }
 
         receive_data = requests.get('https://api.hackmd.io/v1/me' , headers=headers)
+        print("[",datetime.now(), "] receive data from HackMD.")
+
         data = json.loads(receive_data.content)
         name = data['name']
         email = data['email']
         account = data['userPath']
 
-        # print(name , email , account)
+        print("[",datetime.now(), "] HackMD account :",userpath)
 
         string = "name: "+ name+", "+ "email: "+ email+"."
         await ctx.send(string)
@@ -45,9 +48,11 @@ class note(Cog_Extension):
         headers = {
             'Authorization': 'Bearer ' + HACKMD_TOKEN,
         }
+
         st = time()
         recv = requests.get('https://api.hackmd.io/v1/notes' ,headers=headers)
         data = json.loads(recv.content)
+        print("[",datetime.now(), "] receive data from HackMD.")
         
         # extract title from data
         title = []
@@ -67,7 +72,7 @@ class note(Cog_Extension):
 
         
         # result use embed
-        embed=discord.Embed(title="See what I find...", color=0x1de7d2 , timestamp=datetime.now(self.tz))
+        embed=Embed(title="See what I find...", color=0x1de7d2 , timestamp=datetime.now(self.tz))
         embed.set_author(name="Durid_bot")
         embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
         
@@ -78,8 +83,9 @@ class note(Cog_Extension):
             embed.add_field(name="Nothind find.", value="maybe you can change the description.")  
 
         end_time = time() - st 
-        # print(end_time)
         embed.set_footer(text=f"total used time: {round(end_time,1)} (s)")
+        print("[", datetime.now(), "] ending find command,total used time: ",round(end_time, 1)," (s)")
+
         await ctx.send(embed=embed)
 
     @commands.command("create" ,brief="create note." ,description="$create <name>. create note.")
@@ -92,32 +98,30 @@ class note(Cog_Extension):
         content['basic']['title'] = str(title)
         content = json.dumps(content['basic'])
 
-        # print(type(content))
-        # print(content)
-        
         headers = {
             'Authorization': 'Bearer ' + HACKMD_TOKEN,
             "Content-Type": "application/json"
         }
         recv = requests.post("https://api.hackmd.io/v1/notes", headers=headers , data=content)
         responce = json.loads(recv.content)
-        # print(responce['id'])
-        # print(responce['title'])
+        print("[",datetime.now(), "] post new note to HackMD.")
 
         # resopnce 
         if recv.status_code == 201:
-            embed = discord.Embed(title="Successed",color=0x1de7d2, timestamp=datetime.now(self.tz))
+            embed = Embed(title="Successed",color=0x1de7d2, timestamp=datetime.now(self.tz))
             embed.set_author(name="Durid_bot")
             embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
             embed.add_field(name="Note "+responce['title']+" Created", value="note id : "+str(responce['id']),inline=False)
+            print("[",datetime.now(), "] Sueccessed.")
         else :
             # print(recv.status_code)
-            embed = discord.Embed(
+            embed = Embed(
                 title="Oh No!", color=0x1de7d2, timestamp=datetime.now(self.tz))
             embed.set_author(name="Durid_bot")
             embed.set_thumbnail(url="https://i.imgur.com/XR6qAT2.jpg")
             embed.add_field(name="they have some troobule",
                             value="the web responce code: "+str(recv.status_code),inline=False)
+            print("[",datetime.now(), "] Error with status code:",recv.status_code)
 
         # update content (bug cannot seting content and title at same time )
         # bug. update wii wrap all thing 

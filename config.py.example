@@ -1,0 +1,8 @@
+'''
+bot config file example
+'''
+
+DISORD_BOT_TOKEN= "BOT_TOKEN"
+HACKMD_TOKEN="HACKMD_TOKEN"
+TIMEZONE= 8
+DATA_PATH="data/"

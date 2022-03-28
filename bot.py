@@ -2,11 +2,12 @@
 discord bot for local use.
 author: @Durid_Ming
 '''
-from config import *
 import discord
 from discord.ext import commands
 import os
+from datetime import datetime
 
+from config import *
 from Help import Help
 
 if __name__ =="__main__":
@@ -40,7 +41,7 @@ if __name__ =="__main__":
 
     @bot.event
     async def on_ready():
-        print("login user:",bot.user)
+        print("[",datetime.now(),"] the bot is on ready.")
     
     @bot.event
     async def on_command_error(ctx ,error):
