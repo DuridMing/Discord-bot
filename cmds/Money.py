@@ -261,7 +261,7 @@ class Money(Cog_Extension):
             delta = today.replace(day=1)
             delta = delta + relativedelta(months=+1)
             self.next_month = delta.strftime('%Y-%m-%d')
-
+            print("[", datetime.now(), "] set next report date on ",self.next_month)
             self.until_next_month = True
         today = datetime.now(self.tz).strftime('%Y-%m-%d')
         if today == self.next_month:
