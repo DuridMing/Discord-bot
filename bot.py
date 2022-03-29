@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 import os,sys
 from datetime import datetime
+from cmds.Money import Money
 
 from config import *
 from Help import Help
@@ -22,9 +23,7 @@ def dircheck(path):
         try:
             os.mkdir(path)
         except OSError:
-
-            # print("[", datetime.now(), "] can not data dictory : "+path)
-            log.error("can not data dictory : "+path)
+            print("[", datetime.now(), "] can not data dictory : "+path)
 
             sys.exit()
 

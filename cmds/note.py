@@ -3,7 +3,6 @@ hackmd api combine discord bot.
 @author:DuridMing
 date: 03/23/2022
 '''
-from pydoc import describe
 # import discord
 from discord import Embed
 from discord.ext import commands
@@ -36,7 +35,7 @@ class note(Cog_Extension):
         email = data['email']
         account = data['userPath']
 
-        print("[",datetime.now(), "] HackMD account :",userpath)
+        print("[",datetime.now(), "] HackMD account :",account)
 
         string = "name: "+ name+", "+ "email: "+ email+"."
         await ctx.send(string)

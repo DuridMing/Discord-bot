@@ -15,6 +15,20 @@ from config import *
 
 csv_path = DATA_PATH +"csvf/"
 
+def create_csv():
+    f = None
+    csv_file = csv_path+"fiance-" + \
+        datetime.now(timezone(timedelta(hours=+8))
+                     ).strftime("%Y-%m")+".csv"
+    try :
+        f = open(csv_file, 'a' ,newline='')
+        writer = csv.writer(f)
+        writer.writerow(['date', 'status', 'tag', 'dollar', 'describe'])
+        f.close()
+    except OSError:
+        print("[", datetime.now(), "] can not create the csv file : ",csv_file)
+    
+
 def writting(status,tag,dollar ,describe):
     f = None
     csv_file = csv_path+"fiance-" + \
@@ -72,6 +86,9 @@ def lastest_chart():
     status = chart.single_chart(status="pay", month=month, year=year)
     
     return status
+def chart(year , month):
+    status = chart.single_chart(status="pay", month=month, year=year)
+    return status
 
 def list_all(year ,month):
        
@@ -96,7 +113,7 @@ def list_all(year ,month):
         return None
 
 def compare_chart(y1 ,m1 ,y2 ,m2):
-   
+    
     chart.compare_chart("pay",y1,m1,y2,m2)
     
 

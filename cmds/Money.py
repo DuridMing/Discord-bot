@@ -3,10 +3,11 @@ finance modify commands.
 using csv file to record data.
 the file will be locate on ../finance/
 '''
-# import discord
+import discord
 from discord import Embed ,File
 from discord.ext import commands ,tasks
-from datetime import datetime, timedelta
+from datetime import date,datetime, timedelta
+from dateutil.relativedelta import *
 import pandas as pd
 import os
 
@@ -15,11 +16,20 @@ from finance import finance
 
 from config import *
 
+class UnstableFile(Exception):
+    pass
+
 class Money(Cog_Extension):
     def __init__(self, bot):
         super().__init__(bot)
         self.tags = ['food', 'book', 'game','necessary','traffic', 'other']
         self.tags_string =  "'" + "','".join(map(str, self.tags)) + "'"
+        self.until_next_month = False
+        self.next_month=None
+        self.monthly_report.start()
+    
+    def cog_unload(self):
+        self.monthly_report.cancel()
 
     @commands.group(invoke_without_command=True, brief="finance modify group command.", description="finance modify group command.")
     async def money(self,ctx):
@@ -156,7 +166,7 @@ class Money(Cog_Extension):
         await ctx.send(embed=embed)
 
 
-    @commands.command(brief="finance copmpare chart.", description="$lcpr <past_year:int> <past_month:int>. compare to latest.")
+    @commands.command(brief="finance copmpare chart.", description="$lcpr <past_year:int> <past_month:int>. compare to past two month.")
     async def lcpr(self ,ctx ,y2:int ,m2:int):
         self.month_check(m2)
         def mck(month):
@@ -177,7 +187,8 @@ class Money(Cog_Extension):
             str(y2)+"-"+str(m2)+"-chart.jpg"
 
         try:
-            print("try")
+            if (m2 == datetime.now(self.tz).strftime("%m")):
+                raise UnstableFile
             if not os.path.exists(pic_path):
                 raise FileNotFoundError
             else:
@@ -185,6 +196,9 @@ class Money(Cog_Extension):
         except FileNotFoundError:
             print("[", datetime.now(), "] figure not found.create new figure.")
             figure = finance.compare_chart(y1,m1,y2,m2)
+        except UnstableFile:
+            print("[", datetime.now(), "] figure compare with this month.")
+            figure = finance.compare_chart(y1, m1, y2, m2)
         finally:
             print("[", datetime.now(), "] open figure :", pic_path)
             with open(pic_path, 'rb') as f:
@@ -193,10 +207,18 @@ class Money(Cog_Extension):
                 await ctx.send(file=picture)
 
 
-    @commands.command(brief="finance copmpare chart.", description="$tcpr <year1:int> <month1:int> <year2:int> <month2:int>. compare two month.")
+    @commands.command(brief="finance copmpare chart.", description="$tcpr <year1:int> <month1:int> <year2:int> <month2:int>. compare two month. cannot use on this month.")
     async def tcpr(self ,ctx ,y1:int ,m1:int ,y2:int ,m2:int):
         self.month_check(m1)
         self.month_check(m2)
+        tmonth = datetime.now(self.tz).strftime("%m")
+
+        if m1 < m2:
+            def swap( a, b ):
+                return b, a
+            swap(m1,m2)
+            swap(y1,y2)
+
         def mck(month):
             if month > 0 or month < 10:
                 return "0"+str(month)
@@ -209,6 +231,8 @@ class Money(Cog_Extension):
             str(y2)+"-"+str(m2)+"-chart.jpg"
 
         try:
+            if (m1 == tmonth) or (m2 == tmonth):
+                raise UnstableFile
             if not os.path.exists(pic_path):
                 raise FileNotFoundError
             else:
@@ -216,15 +240,53 @@ class Money(Cog_Extension):
         except FileNotFoundError:
             print("[", datetime.now(), "] figure not found.create new figure.")
             figure = finance.compare_chart(y1,m1,y2,m2)
+        except UnstableFile:
+            print("[", datetime.now(), "] figure compare with this month.")
+            figure = finance.compare_chart(y1, m1, y2, m2)
         finally:
             print("[", datetime.now(), "] open figure :", pic_path)
             with open(pic_path, 'rb') as f:
                 picture = File(f)
                 f.close()
                 await ctx.send(file=picture)
+
+    # tasking loop for one month
+    # create a new csv file and send a new compare figure
+    @tasks.loop(seconds=1)
+    async def monthly_report(self):
+        channel = self.bot.get_channel(MONTH_REPORT_CHANNEL)
+        
+        if not self.until_next_month:
+            today = datetime.now(self.tz)
+            delta = today.replace(day=1)
+            delta = delta + relativedelta(months=+1)
+            self.next_month = delta.strftime('%Y-%m-%d')
+
+            self.until_next_month = True
+        today = datetime.now(self.tz).strftime('%Y-%m-%d')
+        if today == self.next_month:
+            finance.create_csv()
+
+            # setting date to last month
+            td = datetime.now(self.tz)
+            first = td.replace(day=1)
+            lastMonth = first - timedelta(days=1)
+            y1 = lastMonth.strftime("%Y")
+            m1 = lastMonth.strftime("%m")
+
+            path = DATA_PATH+"figure/"
+            pic_path = path+"finance-" + str(y1)+"-"+str(m1)+"-chart.jpg"
+            figure = finance.chart(y1,m1)
+  
+            with open(pic_path, 'rb') as f:
+                picture = File(f)
+                f.close()
+                await channel.send(file=picture)
+
+            self.until_next_month = False
+
     
-    # need a function cand send fig. on spec. time.
-    # and create first file at same time.
+
 
 def setup(bot):
     bot.add_cog(Money(bot))
