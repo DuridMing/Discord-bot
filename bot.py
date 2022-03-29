@@ -4,11 +4,29 @@ author: @Durid_Ming
 '''
 import discord
 from discord.ext import commands
-import os
+import os,sys
 from datetime import datetime
 
 from config import *
 from Help import Help
+
+
+def dircheck(path):
+    # print("[", datetime.now(), "] data directory check.")
+    if os.path.isdir(path):
+        print("[", datetime.now(), "] "+path+" exist.")
+    else:
+        print("[", datetime.now(), "] "+path+" not found.")
+        print("[", datetime.now(), "] create data dictory : "+path)
+
+        try:
+            os.mkdir(path)
+        except OSError:
+
+            # print("[", datetime.now(), "] can not data dictory : "+path)
+            log.error("can not data dictory : "+path)
+
+            sys.exit()
 
 if __name__ =="__main__":
 
@@ -41,6 +59,10 @@ if __name__ =="__main__":
 
     @bot.event
     async def on_ready():
+
+        dircheck(path=DATA_PATH)
+        dircheck(path=DATA_PATH+"figure/")
+        dircheck(path=DATA_PATH+"csvf/")
         print("[",datetime.now(),"] the bot is on ready.")
     
     @bot.event
