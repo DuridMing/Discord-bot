@@ -2,8 +2,8 @@
 bot config file example
 '''
 
-DISORD_BOT_TOKEN= "BOT_TOKEN"
-HACKMD_TOKEN="MD_TOKEN"
+DISORD_BOT_TOKEN= "bot_token"
+HACKMD_TOKEN="md_token"
 TIMEZONE= 8
 DATA_PATH="data/"
-MONTH_REPORT_CHANNEL=
+MONTH_REPORT_CHANNEL="Channel_id"
