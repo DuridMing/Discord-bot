@@ -1,4 +1,4 @@
-discord
-pandas
-matplolib
-numpy
+discord==1.7.3
+pandas==1.4.1
+matplolib==3.5.1
+numpy==1.21.5
