@@ -137,10 +137,10 @@ class Money(Cog_Extension):
         await ctx.send(embed=embed)
 
     
-    @money.command(invoke_without_command=True, brief="list month descr.", description="$money plist <year:int> <month:int>")
-    async def plist(self, ctx ,year:int ,month:int):
+    @money.command(invoke_without_command=True, brief="list month descr.", description="$money paylist <year:int> <month:int>")
+    async def paylist(self, ctx ,year:int ,month:int):
         if month <10 or month>0:
-            month = "0"+month
+            month = "0"+str(month)
         
         mdata = finance.list_all(year, month)
         if mdata is None:
