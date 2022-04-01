@@ -252,7 +252,7 @@ class Money(Cog_Extension):
 
     # tasking loop for one month
     # create a new csv file and send a new compare figure
-    @tasks.loop(seconds=1)
+    @tasks.loop(seconds=10)
     async def monthly_report(self):
         channel = self.bot.get_channel(MONTH_REPORT_CHANNEL)
         
@@ -276,7 +276,7 @@ class Money(Cog_Extension):
 
             path = DATA_PATH+"figure/"
             pic_path = path+"finance-" + str(y1)+"-"+str(m1)+"-chart.jpg"
-            figure = finance.chart(y1,m1)
+            figure = finance.monthly_chart(y1,m1)
   
             with open(pic_path, 'rb') as f:
                 picture = File(f)

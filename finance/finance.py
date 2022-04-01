@@ -86,7 +86,7 @@ def lastest_chart():
     status = chart.single_chart(status="pay", month=month, year=year)
     
     return status
-def chart(year , month):
+def monthly_chart(year , month):
     status = chart.single_chart(status="pay", month=month, year=year)
     return status
 
